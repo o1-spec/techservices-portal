@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/Header"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 // Mock team data (replace with API fetch)
 interface TeamMember {
@@ -30,6 +31,14 @@ export default function MyTeam() {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterDepartment, setFilterDepartment] = useState("All")
 
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+    const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null)
+
+    // Add function to open profile modal
+    const openProfileModal = (member: TeamMember) => {
+        setSelectedMember(member)
+        setIsProfileModalOpen(true)
+    }
     // TODO: Fetch team based on current Manager
 
     const filteredTeam = team.filter(member => {
@@ -127,7 +136,7 @@ export default function MyTeam() {
                                         <span className="font-semibold text-gray-900">{member.tasksCompleted}</span>
                                     </div>
                                 </div>
-                                <Button variant="outline" className="w-full mt-4" onClick={() => window.location.href = `/profile/${member.id}`}>
+                                <Button variant="outline" className="w-full mt-4" onClick={() => openProfileModal(member)}>
                                     <Eye className="h-4 w-4 mr-2" />
                                     View Profile
                                 </Button>
@@ -143,6 +152,93 @@ export default function MyTeam() {
                     </div>
                 )}
             </div>
+            <Dialog open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen}>
+                <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold text-center">Profile Details</DialogTitle>
+                    </DialogHeader>
+                    {selectedMember && (
+                        <div className="space-y-6">
+                            {/* Profile Header */}
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
+                                    <User className="h-10 w-10 text-white" />
+                                </div>
+                                <h3 className="text-2xl font-semibold text-gray-900">{selectedMember.name}</h3>
+                                <p className="text-lg text-gray-600">{selectedMember.role}</p>
+                                <Badge className={`${getStatusColor(selectedMember.status)} mt-2`}>
+                                    {selectedMember.status}
+                                </Badge>
+                            </div>
+
+                            {/* Contact Information */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Mail className="h-5 w-5" />
+                                        Contact Information
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <Mail className="h-5 w-5 text-gray-500" />
+                                        <span className="text-sm">{selectedMember.email}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Phone className="h-5 w-5 text-gray-500" />
+                                        <span className="text-sm">{selectedMember.phone}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Building className="h-5 w-5 text-gray-500" />
+                                        <span className="text-sm">{selectedMember.department}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Performance Metrics */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <TrendingUp className="h-5 w-5" />
+                                        Performance Metrics
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium">Performance Score</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`font-semibold ${getPerformanceColor(selectedMember.performance)}`}>
+                                                {selectedMember.performance}%
+                                            </span>
+                                            <div className="w-20 h-2 bg-gray-200 rounded-full">
+                                                <div
+                                                    className={`h-2 rounded-full ${selectedMember.performance >= 90 ? 'bg-green-500' : selectedMember.performance >= 80 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                                    style={{ width: `${selectedMember.performance}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium">Tasks Completed</span>
+                                        <span className="font-semibold text-gray-900">{selectedMember.tasksCompleted}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Actions */}
+                            <div className="flex justify-end gap-3">
+                                <Button variant="outline" onClick={() => setIsProfileModalOpen(false)}>
+                                    Close
+                                </Button>
+                                <Button>
+                                    Send Message
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
         </div>
     )
 }

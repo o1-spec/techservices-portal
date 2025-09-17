@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { FolderOpen, Calendar, Users, Target, Edit, Save, X, CheckCircle, Clock, AlertCircle, Plus, User } from "lucide-react"
+import { FolderOpen, Calendar, Users, Target, Edit, Save, X, CheckCircle, Clock, AlertCircle, Plus, User, Mail, Phone, Building } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import Header from "@/components/Header"
 
 // Mock project data
@@ -23,11 +24,50 @@ interface Project {
   tasks: { id: number; title: string; status: string; assignee: string }[]
 }
 
+// Mock employees data for assignment
+const mockEmployees = [
+  { id: 1, name: "John Doe", role: "Developer" },
+  { id: 2, name: "Jane Smith", role: "Designer" },
+  { id: 3, name: "Bob Johnson", role: "Developer" },
+  { id: 4, name: "Alice Brown", role: "Manager" },
+]
+
 export default function ProjectDetails() {
   const { id } = useParams()
   const [project, setProject] = useState<Project | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false)
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false)
+  const [newTeamMember, setNewTeamMember] = useState({ name: "", role: "" })
+  const [newTask, setNewTask] = useState({ title: "", description: "", assignee: "" })
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  interface MemberProfile {
+    id: number
+    name: string
+    role: string
+    email: string
+    phone: string
+    department: string
+    status: string
+    performance: number
+    tasksCompleted: number
+  }
+  
+    const [selectedMember, setSelectedMember] = useState<MemberProfile | null>(null)
 
+  const openProfileModal = (member: Project["team"][number]) => {
+    const mockProfile = {
+      ...member,
+      email: `${member.name.toLowerCase().replace(' ', '.')}@company.com`,
+      phone: "+1 (555) 123-4567",
+      department: "Engineering",
+      status: "Active",
+      performance: 85,
+      tasksCompleted: 12,
+    }
+    setSelectedMember(mockProfile)
+    setIsProfileModalOpen(true)
+  }
   useEffect(() => {
     // TODO: Fetch project by id
     setProject({
@@ -73,6 +113,33 @@ export default function ProjectDetails() {
   const handleSave = () => {
     // TODO: Save project updates
     setIsEditing(false)
+  }
+
+  const handleAddTeamMember = () => {
+    if (newTeamMember.name && newTeamMember.role) {
+      const newMember = {
+        id: project.team.length + 1,
+        name: newTeamMember.name,
+        role: newTeamMember.role,
+      }
+      setProject({ ...project, team: [...project.team, newMember] })
+      setNewTeamMember({ name: "", role: "" })
+      setIsAddTeamModalOpen(false)
+    }
+  }
+
+  const handleAddTask = () => {
+    if (newTask.title && newTask.assignee) {
+      const newTaskItem = {
+        id: project.tasks.length + 1,
+        title: newTask.title,
+        status: "Pending",
+        assignee: newTask.assignee,
+      }
+      setProject({ ...project, tasks: [...project.tasks, newTaskItem] })
+      setNewTask({ title: "", description: "", assignee: "" })
+      setIsAddTaskModalOpen(false)
+    }
   }
 
   return (
@@ -168,14 +235,53 @@ export default function ProjectDetails() {
                         <p className="text-sm text-gray-600">{member.role}</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">View Profile</Button>
+                    <Button variant="outline" size="sm" onClick={() => openProfileModal(member)}>
+                      View Profile
+                    </Button>
                   </div>
                 ))}
               </div>
-              <Button className="w-full mt-4">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Team Member
-              </Button>
+              <Dialog open={isAddTeamModalOpen} onOpenChange={setIsAddTeamModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full mt-4">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Team Member
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Team Member</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Select Employee</label>
+                      <Select value={newTeamMember.name} onValueChange={(value) => setNewTeamMember({ ...newTeamMember, name: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose an employee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mockEmployees.map((emp) => (
+                            <SelectItem key={emp.id} value={emp.name}>
+                              {emp.name} - {emp.role}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Role in Project</label>
+                      <Input
+                        value={newTeamMember.role}
+                        onChange={(e) => setNewTeamMember({ ...newTeamMember, role: e.target.value })}
+                        placeholder="e.g., Developer, Designer"
+                      />
+                    </div>
+                    <Button onClick={handleAddTeamMember} className="w-full">
+                      Add Member
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 
@@ -204,10 +310,56 @@ export default function ProjectDetails() {
                   </div>
                 ))}
               </div>
-              <Button className="w-full mt-4">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Task
-              </Button>
+              <Dialog open={isAddTaskModalOpen} onOpenChange={setIsAddTaskModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full mt-4">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Task</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Task Title</label>
+                      <Input
+                        value={newTask.title}
+                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                        placeholder="Enter task title"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Description</label>
+                      <Textarea
+                        value={newTask.description}
+                        onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                        placeholder="Enter task description"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Assign To</label>
+                      <Select value={newTask.assignee} onValueChange={(value) => setNewTask({ ...newTask, assignee: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose an assignee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {project.team.map((member) => (
+                            <SelectItem key={member.id} value={member.name}>
+                              {member.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button onClick={handleAddTask} className="w-full">
+                      Add Task
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>
@@ -265,6 +417,93 @@ export default function ProjectDetails() {
           </Card>
         )}
       </div>
+
+      <Dialog open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">Profile Details</DialogTitle>
+          </DialogHeader>
+          {selectedMember && (
+            <div className="space-y-6">
+              {/* Profile Header */}
+              <div className="flex flex-col items-center text-center">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
+                  <User className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900">{selectedMember.name}</h3>
+                <p className="text-lg text-gray-600">{selectedMember.role}</p>
+                <Badge className={getStatusColor(selectedMember.status)} mt-2>
+                  {selectedMember.status}
+                </Badge>
+              </div>
+
+              {/* Contact Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Mail className="h-5 w-5" />
+                    Contact Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm">{selectedMember.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm">{selectedMember.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Building className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm">{selectedMember.department}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Performance Metrics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Performance Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Performance Score</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-semibold ${selectedMember.performance >= 90 ? 'text-green-600' : selectedMember.performance >= 80 ? 'text-yellow-600' : 'text-red-600'}`}>
+                        {selectedMember.performance}%
+                      </span>
+                      <div className="w-20 h-2 bg-gray-200 rounded-full">
+                        <div
+                          className={`h-2 rounded-full ${selectedMember.performance >= 90 ? 'bg-green-500' : selectedMember.performance >= 80 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                          style={{ width: `${selectedMember.performance}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Tasks Completed</span>
+                    <span className="font-semibold text-gray-900">{selectedMember.tasksCompleted}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setIsProfileModalOpen(false)}>
+                  Close
+                </Button>
+                <Button>
+                  Send Message
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

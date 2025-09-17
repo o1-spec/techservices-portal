@@ -1,11 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client"
 import { useState, useEffect } from "react"
-import { BarChart3, Users, FolderOpen, MessageSquare, Download, TrendingUp, Clock, CheckCircle, Target, User } from "lucide-react"
+import { BarChart3, Users, FolderOpen, MessageSquare, Download, TrendingUp, Clock, CheckCircle, Target } from "lucide-react"
 import Header from "@/components/Header"
 
 type UserRole = "Admin" | "Manager" | "Employee"
-const userRole: UserRole = "Employee" // Change to "Admin", "Manager", or "Employee" to test
+const userRole: UserRole = "Admin" // Change to "Admin", "Manager", or "Employee" to test
 
 export default function Dashboard() {
   const [stats, setStats] = useState({ employees: 0, projects: 0, tasks: 0, announcements: 0, teamMembers: 0, myTasks: 0, performance: 0 })

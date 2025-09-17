@@ -127,6 +127,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+      font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif; 
   }
 
   /* Professional typography hierarchy */

@@ -40,7 +40,7 @@ export default function Home() {
               Streamline employee management, project tracking, and team communication with our comprehensive SaaS
               platform designed for modern software development companies.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            {/* <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Button
                 size="lg"
                 className="bg-secondary hover:bg-secondary/90 text-secondary-foreground px-8 py-3 text-lg"
@@ -51,7 +51,7 @@ export default function Home() {
               <Button variant="outline" size="lg" className="px-8 py-3 text-lg bg-transparent">
                 Watch Demo
               </Button>
-            </div>
+            </div> */}
             <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
@@ -70,7 +70,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-12 bg-muted/30">
+      {/* <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
@@ -96,7 +96,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="py-24 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -283,7 +283,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-24 bg-muted/30">
+      {/* <section className="py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Trusted by teams worldwide</h2>
@@ -322,7 +322,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="py-24 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -481,7 +481,7 @@ export default function Home() {
           <p className="text-xl mb-8 opacity-90 text-pretty">
             Join thousands of development teams who have already streamlined their operations with Techservices Portal.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+          {/* <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button
               size="lg"
               variant="secondary"
@@ -497,7 +497,7 @@ export default function Home() {
             >
               Schedule Demo
             </Button>
-          </div>
+          </div> */}
           <p className="text-sm opacity-75">No credit card required • 14-day free trial • Cancel anytime</p>
         </div>
       </section>

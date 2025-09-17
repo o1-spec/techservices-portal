@@ -182,10 +182,10 @@ export default function SignUp() {
         </Card>
 
         <div className="mt-8 space-y-4">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          {/* <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
             <span>14-day free trial, no credit card required</span>
-          </div>
+          </div> */}
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
             <span>Enterprise-grade security and data protection</span>

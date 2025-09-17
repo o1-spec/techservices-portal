@@ -25,9 +25,8 @@ export default function Header() {
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const [userRole, setUserRole] = useState<string | null>("Employee");
+    const [userRole, setUserRole] = useState<string | null>("Manager");
 
-    // Mock notifications data
     const [notifications, setNotifications] = useState([
         { id: 1, title: "New Task Assigned", message: "You have been assigned a new task: 'Design UI Mockups'", time: "2 hours ago", unread: true },
         { id: 2, title: "Project Update", message: "Project 'Website Redesign' has been updated", time: "1 day ago", unread: true },
@@ -120,7 +119,7 @@ export default function Header() {
 
     return (
         <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border/40">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20 py-3">
                     <div className="flex items-center">
                         <Building className="h-8 w-8 text-secondary" />

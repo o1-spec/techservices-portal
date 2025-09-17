@@ -11,6 +11,8 @@ import {
   Search,
   Filter,
   MoreHorizontal,
+  Badge,
+  X,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -72,11 +74,18 @@ export default function Projects() {
   const [form, setForm] = useState({ name: "", description: "", deadline: "", team: 0 })
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("All")
-
+  const [selectedEmployees, setSelectedEmployees] = useState<number[]>([])
+  const [employees, _setEmployees] = useState([
+    { id: 1, name: "John Doe", role: "Developer" },
+    { id: 2, name: "Jane Smith", role: "Designer" },
+    { id: 3, name: "Bob Johnson", role: "Developer" },
+    { id: 4, name: "Alice Brown", role: "Manager" },
+  ])
   const handleSave = () => {
     setProjects([...projects, { id: Date.now(), status: "Planning", progress: 0, ...form }])
     setIsModalOpen(false)
     setForm({ name: "", description: "", deadline: "", team: 0 })
+    setSelectedEmployees([])
   }
 
   const filteredProjects = projects.filter((project) => {
@@ -236,7 +245,11 @@ export default function Projects() {
                   {getStatusIcon(project.status)}
                   <span className="ml-1">{project.status}</span>
                 </div>
-
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm" onClick={() => window.location.href = `/projects/${project.id}`}>
+                    View Details
+                  </Button>
+                </div>
                 <div className="flex -space-x-2">
                   {Array.from({ length: Math.min(project.team, 3) }).map((_, i) => (
                     <div
@@ -257,13 +270,15 @@ export default function Projects() {
           ))}
         </div>
 
-        {filteredProjects.length === 0 && (
-          <div className="text-center py-12">
-            <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">No projects found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
-          </div>
-        )}
+        {
+          filteredProjects.length === 0 && (
+            <div className="text-center py-12">
+              <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-card-foreground mb-2">No projects found</h3>
+              <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
+            </div>
+          )
+        }
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -310,6 +325,37 @@ export default function Projects() {
                   value={form.team}
                   onChange={(e) => setForm({ ...form, team: Number.parseInt(e.target.value) || 0 })}
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Assign Employees</label>
+                <Select onValueChange={(value) => {
+                  const empId = Number(value)
+                  if (!selectedEmployees.includes(empId)) {
+                    setSelectedEmployees([...selectedEmployees, empId])
+                  }
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select employees to assign" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees.map((emp) => (
+                      <SelectItem key={emp.id} value={emp.id.toString()}>
+                        {emp.name} - {emp.role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedEmployees.map((empId) => {
+                    const emp = employees.find(e => e.id === empId)
+                    return (
+                      <Badge key={empId} className="flex items-center gap-1">
+                        {emp?.name}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedEmployees(selectedEmployees.filter(id => id !== empId))} />
+                      </Badge>
+                    )
+                  })}
+                </div>
               </div>
             </div>
 
