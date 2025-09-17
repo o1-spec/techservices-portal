@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Mail, Building, ArrowLeft, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("")
@@ -41,14 +41,14 @@ export default function ForgotPassword() {
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 shadow-lg">
               <Building className="h-8 w-8 text-secondary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold text-balance">
+            <p className="text-2xl font-bold text-balance">
               {sent ? "Check Your Email" : "Reset Your Password"}
-            </CardTitle>
-            <CardDescription className="text-base text-muted-foreground">
+            </p>
+            <p className="text-base text-muted-foreground">
               {sent
                 ? "We've sent a password reset link to your email address"
                 : "Enter your email address and we'll send you a link to reset your password"}
-            </CardDescription>
+            </p>
           </CardHeader>
 
           <CardContent className="space-y-6">

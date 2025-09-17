@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff, User, Mail, Lock, Building, ArrowRight, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function SignUp() {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "Employee", companyName: "" })
@@ -40,19 +40,18 @@ export default function SignUp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4 my-0 md:my-10">
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25"></div>
-
       <div className="relative w-full max-w-md">
-        <Card className="shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
+        <Card className=" border-0 bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-8">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 shadow-lg">
               <Building className="h-8 w-8 text-secondary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold text-balance">Join Techservices Portal</CardTitle>
-            <CardDescription className="text-base text-muted-foreground">
+            <p className="text-2xl font-bold text-balance">Join Techservices Portal</p>
+            <p className="text-base text-muted-foreground">
               Create your account and start managing your team effectively
-            </CardDescription>
+            </p>
           </CardHeader>
 
           <CardContent className="space-y-6">

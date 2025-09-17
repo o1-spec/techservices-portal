@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Lock, Eye, EyeOff, CheckCircle, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("")
@@ -60,10 +60,10 @@ export default function ResetPassword() {
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 shadow-lg">
               <Shield className="h-8 w-8 text-secondary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold text-balance">Create New Password</CardTitle>
-            <CardDescription className="text-base text-muted-foreground">
+            <p className="text-2xl font-bold text-balance">Create New Password</p>
+            <p className="text-base text-muted-foreground">
               Choose a strong password to secure your Techservices Portal account
-            </CardDescription>
+            </p>
           </CardHeader>
 
           <CardContent className="space-y-6">
