@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/Header"
 
-// Mock user role (replace with actual role from context)
-const userRole = "Manager" // Change to "Admin", "Manager", or "Employee" to test
+type UserRole = "Admin" | "Manager" | "Employee"
+const userRole: UserRole = "Employee" 
 
 interface Announcement {
   id: number
