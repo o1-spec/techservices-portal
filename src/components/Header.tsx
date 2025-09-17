@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 export default function Header() {
     const router = useRouter();
@@ -26,10 +27,23 @@ export default function Header() {
     const [isAuthenticated, setIsAuthenticated] = useState(true);
     const [userRole, setUserRole] = useState<string | null>("Employee");
 
+    // Mock notifications data
+    const [notifications, setNotifications] = useState([
+        { id: 1, title: "New Task Assigned", message: "You have been assigned a new task: 'Design UI Mockups'", time: "2 hours ago", unread: true },
+        { id: 2, title: "Project Update", message: "Project 'Website Redesign' has been updated", time: "1 day ago", unread: true },
+        { id: 3, title: "Announcement", message: "New company announcement posted", time: "3 days ago", unread: false },
+    ]);
+
+    const unreadCount = notifications.filter(n => n.unread).length;
+
     const handleLogout = () => {
         setIsAuthenticated(false);
         setUserRole(null);
         router.push("/auth/login");
+    };
+
+    const markAsRead = (id: number) => {
+        setNotifications(notifications.map(n => n.id === id ? { ...n, unread: false } : n));
     };
 
     const renderNavLinks = () => {
@@ -76,7 +90,7 @@ export default function Header() {
                             <MessageSquare className="h-4 w-4 mr-2" />
                             Announcements
                         </Link>
-                        <Link href="/team" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/my-team" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
                             <Users className="h-4 w-4 mr-2" />
                             My Team
                         </Link>
@@ -119,10 +133,46 @@ export default function Header() {
                                 {renderNavLinks()}
                             </nav>
                             <div className="flex items-center space-x-2">
-                                <Button variant="ghost" size="icon" className="relative">
-                                    <Bell className="h-4 w-4" />
-                                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-secondary rounded-full"></span>
-                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="relative">
+                                            <Bell className="h-4 w-4" />
+                                            {unreadCount > 0 && (
+                                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center">
+                                                    {unreadCount}
+                                                </span>
+                                            )}
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-80">
+                                        <div className="p-4 border-b">
+                                            <h3 className="font-semibold">Notifications</h3>
+                                            <p className="text-sm text-muted-foreground">You have {unreadCount} unread notifications</p>
+                                        </div>
+                                        <div className="max-h-64 overflow-y-auto">
+                                            {notifications.map((notification) => (
+                                                <DropdownMenuItem
+                                                    key={notification.id}
+                                                    className={`p-4 cursor-pointer ${notification.unread ? 'bg-muted/50' : ''}`}
+                                                    onClick={() => markAsRead(notification.id)}
+                                                >
+                                                    <div className="flex flex-col space-y-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-medium">{notification.title}</span>
+                                                            {notification.unread && <div className="h-2 w-2 bg-secondary rounded-full"></div>}
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                                                        <span className="text-xs text-muted-foreground">{notification.time}</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </div>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="p-4 text-center">
+                                            <Link href="/notifications" className="w-full">View All Notifications</Link>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                                 <Link href="/profile">
                                     <Button variant="ghost" size="sm" className="hidden sm:flex">
                                         <User className="h-4 w-4 mr-2" />
