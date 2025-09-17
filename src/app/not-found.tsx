@@ -2,7 +2,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Home, Search, ArrowLeft, Building, Users, FolderOpen, BarChart3, HelpCircle, Mail } from "lucide-react"
 
 export default function NotFound() {
@@ -32,19 +31,6 @@ export default function NotFound() {
             The page you're looking for doesn't exist or has been moved. Let's help you find what you need.
           </p>
         </div>
-
-        {/* Search Bar */}
-        <Card className="mb-8 max-w-md mx-auto">
-          <CardContent className="p-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search for pages, features, or help..." className="pl-10" />
-              </div>
-              <Button className="bg-secondary hover:bg-secondary/90">Search</Button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Quick Navigation */}
         <div className="mb-8">

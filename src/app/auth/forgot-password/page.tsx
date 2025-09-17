@@ -36,7 +36,7 @@ export default function ForgotPassword() {
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25"></div>
 
       <div className="relative w-full max-w-md">
-        <Card className="shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
+        <Card className="border-0 bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-8">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 shadow-lg">
               <Building className="h-8 w-8 text-secondary-foreground" />

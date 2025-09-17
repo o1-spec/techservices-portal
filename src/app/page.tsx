@@ -504,7 +504,7 @@ export default function Home() {
 
       <footer className="bg-primary text-primary-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center mb-4">
                 <Building className="h-8 w-8 mr-2" />
@@ -537,7 +537,7 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div>
+            {/* <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-primary-foreground/80">
                 <li>
@@ -561,7 +561,7 @@ export default function Home() {
                   </a>
                 </li>
               </ul>
-            </div>
+            </div> */}
             <div>
               <h3 className="font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-primary-foreground/80">
