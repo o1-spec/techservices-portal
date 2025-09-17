@@ -95,7 +95,7 @@ export default function TaskDetails() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{task.title}</h1>

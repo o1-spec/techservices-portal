@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
     Building,
     Users,
@@ -22,10 +22,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export default function Header() {
     const router = useRouter();
+    const pathname = usePathname();
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const [userRole, setUserRole] = useState<string | null>("Manager");
+    const [userRole, setUserRole] = useState<string | null>("Employee");
 
     const [notifications, setNotifications] = useState([
         { id: 1, title: "New Task Assigned", message: "You have been assigned a new task: 'Design UI Mockups'", time: "2 hours ago", unread: true },
@@ -52,23 +53,23 @@ export default function Header() {
             case "Admin":
                 return (
                     <>
-                        <Link href="/dashboard" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/dashboard" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/dashboard" ? "text-secondary" : ""}`}>
                             <BarChart3 className="h-4 w-4 mr-2" />
                             Dashboard
                         </Link>
-                        <Link href="/employees" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/employees" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/employees" ? "text-secondary" : ""}`}>
                             <Users className="h-4 w-4 mr-2" />
                             Employees
                         </Link>
-                        <Link href="/projects" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/projects" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/projects" ? "text-secondary" : ""}`}>
                             <FolderOpen className="h-4 w-4 mr-2" />
                             Projects
                         </Link>
-                        <Link href="/announcements" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/announcements" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/announcements" ? "text-secondary" : ""}`}>
                             <MessageSquare className="h-4 w-4 mr-2" />
                             Announcements
                         </Link>
-                        <Link href="/reports" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/reports" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/reports" ? "text-secondary" : ""}`}>
                             <BarChart3 className="h-4 w-4 mr-2" />
                             Reports
                         </Link>
@@ -77,19 +78,19 @@ export default function Header() {
             case "Manager":
                 return (
                     <>
-                        <Link href="/dashboard" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/dashboard" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/dashboard" ? "text-secondary" : ""}`}>
                             <BarChart3 className="h-4 w-4 mr-2" />
                             Dashboard
                         </Link>
-                        <Link href="/projects" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/projects" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/projects" ? "text-secondary" : ""}`}>
                             <FolderOpen className="h-4 w-4 mr-2" />
                             Projects
                         </Link>
-                        <Link href="/announcements" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/announcements" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/announcements" ? "text-secondary" : ""}`}>
                             <MessageSquare className="h-4 w-4 mr-2" />
                             Announcements
                         </Link>
-                        <Link href="/my-team" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/my-team" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/my-team" ? "text-secondary" : ""}`}>
                             <Users className="h-4 w-4 mr-2" />
                             My Team
                         </Link>
@@ -98,15 +99,15 @@ export default function Header() {
             case "Employee":
                 return (
                     <>
-                        <Link href="/dashboard" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/dashboard" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/dashboard" ? "text-secondary" : ""}`}>
                             <BarChart3 className="h-4 w-4 mr-2" />
                             Dashboard
                         </Link>
-                        <Link href="/my-tasks" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/my-tasks" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/my-tasks" ? "text-secondary" : ""}`}>
                             <FolderOpen className="h-4 w-4 mr-2" />
                             My Tasks
                         </Link>
-                        <Link href="/announcements" className="text-muted-foreground hover:text-secondary transition-colors flex items-center">
+                        <Link href="/announcements" className={`text-muted-foreground hover:text-secondary transition-colors flex items-center ${pathname === "/announcements" ? "text-secondary" : ""}`}>
                             <MessageSquare className="h-4 w-4 mr-2" />
                             Announcements
                         </Link>

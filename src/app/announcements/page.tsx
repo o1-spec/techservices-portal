@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Header from "@/components/Header"
 
 // Mock user role (replace with actual role from context)
-const userRole = "Admin" // Change to "Admin", "Manager", or "Employee" to test
+const userRole = "Manager" // Change to "Admin", "Manager", or "Employee" to test
 
 interface Announcement {
   id: number

@@ -5,7 +5,7 @@ import { BarChart3, Users, FolderOpen, MessageSquare, Download, TrendingUp, Cloc
 import Header from "@/components/Header"
 
 type UserRole = "Admin" | "Manager" | "Employee"
-const userRole: UserRole = "Admin" // Change to "Admin", "Manager", or "Employee" to test
+const userRole: UserRole = "Employee" // Change to "Admin", "Manager", or "Employee" to test
 
 export default function Dashboard() {
   const [stats, setStats] = useState({ employees: 0, projects: 0, tasks: 0, announcements: 0, teamMembers: 0, myTasks: 0, performance: 0 })
