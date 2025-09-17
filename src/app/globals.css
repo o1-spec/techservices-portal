@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -117,4 +117,54 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.scroll::-webkit-scrollbar {
+  width: 0.01px;
+}
+
+.scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:root {
+  --default-font-family: var(--font-poppins), ui-sans-serif, system-ui,
+    sans-serif !important;
+  --default-font-feature-settings: normal !important;
+  --default-font-variation-settings: normal !important;
+}
+
+/* Force font application with highest specificity */
+html,
+html *,
+body,
+body * {
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* Headings use Montserrat */
+h1,
+h1 *,
+h2,
+h2 *,
+h3,
+h3 *,
+h4,
+h4 *,
+h5,
+h5 *,
+h6,
+h6 * {
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.scroll::-webkit-scrollbar {
+  width: 0.01px;
+}
+
+.scroll {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
 }
