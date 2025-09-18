@@ -30,8 +30,8 @@ export const registerSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, 'Please confirm your password'),
-  role: z.enum(['Admin', 'Manager', 'Employee'], { error: 'Role is required' }),
-  company_id: z.string().min(1, 'Company is required'),
+  role: z.enum(['Admin', 'Manager', 'Employee']),
+  companyName: z.string().min(1, 'Company name is required'), // Changed from company_id
   agreeToTerms: z
     .boolean()
     .refine(val => val === true, 'You must agree to the terms and conditions')
