@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Montserrat } from "next/font/google"
 import "./globals.css";
 import { ToastContainer } from "@/components/ui/toast-container";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${montserrat.variable} antialiased relative w-full`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <ToastContainer />
       </body>
     </html>
