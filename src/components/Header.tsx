@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -20,13 +20,23 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    isEmailVerified: boolean;
+}
+
 export default function Header() {
     const router = useRouter();
     const pathname = usePathname();
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const [userRole, setUserRole] = useState<string | null>("Employee");
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
     const [notifications, setNotifications] = useState([
         { id: 1, title: "New Task Assigned", message: "You have been assigned a new task: 'Design UI Mockups'", time: "2 hours ago", unread: true },
@@ -36,9 +46,41 @@ export default function Header() {
 
     const unreadCount = notifications.filter(n => n.unread).length;
 
-    const handleLogout = () => {
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await fetch('/api/auth/me', { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    setUser(data.user);
+                    setUserRole(data.user.role);
+                    setIsAuthenticated(true);
+                } else {
+                    setIsAuthenticated(false);
+                    setUserRole(null);
+                    setUser(null);
+                }
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
+                setIsAuthenticated(false);
+                setUserRole(null);
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
         setIsAuthenticated(false);
         setUserRole(null);
+        setUser(null);
         router.push("/auth/login");
     };
 
@@ -118,6 +160,22 @@ export default function Header() {
         }
     };
 
+    if (loading) {
+        return (
+            <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border/40">
+                <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-20 py-3">
+                        <div className="flex items-center">
+                            <Building className="h-8 w-8 text-secondary" />
+                            <span className="ml-2 text-xl font-bold text-foreground">Techservices Portal</span>
+                        </div>
+                        <div className="animate-pulse bg-muted rounded h-8 w-32"></div>
+                    </div>
+                </div>
+            </header>
+        );
+    }
+
     return (
         <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border/40">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -176,7 +234,7 @@ export default function Header() {
                                 <Link href="/profile">
                                     <Button variant="ghost" size="sm" className="hidden sm:flex">
                                         <User className="h-4 w-4 mr-2" />
-                                        Profile
+                                        {user?.name || 'Profile'}
                                     </Button>
                                 </Link>
                                 <Button variant="ghost" size="sm" onClick={() => setIsLogoutModalOpen(true)} className="hidden sm:flex">
@@ -222,7 +280,7 @@ export default function Header() {
                                 <hr className="border-border" />
                                 <Link href="/profile" className="flex items-center text-muted-foreground hover:text-secondary transition-colors">
                                     <User className="h-4 w-4 mr-3" />
-                                    Profile
+                                    {user?.name || 'Profile'}
                                 </Link>
                                 <button
                                     onClick={() => setIsLogoutModalOpen(true)}

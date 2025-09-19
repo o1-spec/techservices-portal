@@ -3,29 +3,63 @@
 import { useState, useEffect } from "react"
 import { BarChart3, Users, FolderOpen, MessageSquare, Download, TrendingUp, Clock, CheckCircle, Target } from "lucide-react"
 import Header from "@/components/Header"
+import { useToast } from "@/hooks/use-toast"
 
 type UserRole = "Admin" | "Manager" | "Employee"
-const userRole: UserRole = "Employee" // Change to "Admin", "Manager", or "Employee" to test
 
 export default function Dashboard() {
   const [stats, setStats] = useState({ employees: 0, projects: 0, tasks: 0, announcements: 0, teamMembers: 0, myTasks: 0, performance: 0 })
+  const [userRole, setUserRole] = useState<UserRole | null>(null)
+  const [loading, setLoading] = useState(true)
+  const {toast} = useToast()
 
   useEffect(() => {
-    // TODO: Fetch stats based on user role
-    if (userRole === "Admin") {
-      setStats({ employees: 25, projects: 10, tasks: 50, announcements: 5, teamMembers: 0, myTasks: 0, performance: 0 })
-    } else if (userRole === "Manager") {
-      setStats({ employees: 0, projects: 5, tasks: 0, announcements: 3, teamMembers: 8, myTasks: 0, performance: 0 })
-    } else if (userRole === "Employee") {
-      setStats({ employees: 0, projects: 0, tasks: 0, announcements: 2, teamMembers: 0, myTasks: 12, performance: 85 })
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/dashboard', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setStats(data.stats)
+          if ('employees' in data.stats) setUserRole('Admin')
+          else if ('teamMembers' in data.stats) setUserRole('Manager')
+          else if ('myTasks' in data.stats) setUserRole('Employee')
+        } else {
+          console.error('Failed to fetch stats')
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error)
+        toast.error('Error fetching dashboard data')
+      } finally {
+        setLoading(false)
+      }
     }
+    fetchStats()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleExport = (format: string) => {
-    alert(`Exporting report as ${format}`)
-  }
+  const handleExport = async (format: string) => {
+    try {
+      const res = await fetch(`/api/dashboard/export?format=${format}`, { credentials: 'include' });
+      if (res.ok) {
+        const blob = await res.blob();
+        toast.success('Export successful');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dashboard-report.${format.toLowerCase()}`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        toast.error('Export failed');
+      }
+    } catch {
+      toast.error('Export failed');
+    }
+  };
 
   const renderStatsCards = () => {
+    if (!userRole) return null
+
     if (userRole === "Admin") {
       return (
         <>
@@ -231,6 +265,8 @@ export default function Dashboard() {
   }
 
   const renderNavigationCards = () => {
+    if (!userRole) return null
+
     const cards = [
       { title: "Employees", icon: Users, href: "/employees", color: "text-primary", bg: "bg-primary/10", visible: userRole === "Admin" },
       { title: "Projects", icon: FolderOpen, href: "/projects", color: "text-chart-4", bg: "bg-chart-4/10", visible: true },
@@ -263,6 +299,30 @@ export default function Dashboard() {
         </p>
       </div>
     ))
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded mb-4"></div>
+            <div className="h-4 bg-muted rounded mb-8"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded"></div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
