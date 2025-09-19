@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { User, Mail, Lock, Camera, Shield, Calendar, MapPin, Phone, Edit3, Save, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,40 +13,84 @@ import Image from "next/image"
 
 export default function Profile() {
   const [form, setForm] = useState({
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    bio: "Senior Software Engineer with 5+ years of experience in full-stack development.",
-    role: "Senior Developer",
-    department: "Engineering",
-    joinDate: "2022-03-15",
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    bio: "",
+    role: "",
+    department: "",
+    joinDate: "",
     password: "",
     confirmPassword: "",
   })
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [avatar, setAvatar] = useState<string | null>(null)
   const { toast } = useToast()
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/profile', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setForm({
+            name: data.profile.name,
+            email: data.profile.email,
+            phone: data.profile.phone,
+            location: data.profile.location,
+            bio: data.profile.bio,
+            role: data.profile.role,
+            department: data.profile.department,
+            joinDate: data.profile.joinDate,
+            password: "",
+            confirmPassword: "",
+          })
+          setAvatar(data.profile.avatar)
+        } else {
+          console.error('Failed to fetch profile')
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProfile()
+  }, [])
+
   const handleSave = async () => {
     if (form.password && form.password !== form.confirmPassword) {
-      toast.error(
-        "Error",
-        "Passwords do not match",
-      )
+      toast.error("Passwords do not match")
       return
     }
     setLoading(true)
-    // TODO: API call to update profile
-    setTimeout(() => {
-      toast.success(
-
-        "Profile updated successfully",
-      )
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          location: form.location,
+          bio: form.bio,
+          password: form.password || undefined,
+        }),
+      })
+      if (res.ok) {
+        toast.success("Profile updated successfully")
+        setIsEditing(false)
+      } else {
+        console.error('Failed to update profile')
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+    } finally {
       setLoading(false)
-      setIsEditing(false)
-    }, 1000)
+    }
   }
 
   const handleCancel = () => {
@@ -62,6 +106,21 @@ export default function Profile() {
       reader.readAsDataURL(file)
     }
   }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded mb-4"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="h-64 bg-muted rounded lg:col-span-1"></div>
+            <div className="h-96 bg-muted rounded lg:col-span-3"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
