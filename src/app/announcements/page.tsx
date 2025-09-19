@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MessageSquare, Plus, User, Calendar, Edit, Trash2, Search, AlertCircle, Info, CheckCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -9,11 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/Header"
 
-type UserRole = "Admin" | "Manager" | "Employee"
-const userRole: UserRole = "Employee" 
-
 interface Announcement {
-  id: number
+  id: string  // Change to string
   title: string
   content: string
   author: string
@@ -22,36 +19,86 @@ interface Announcement {
   priority: "low" | "medium" | "high"
 }
 
+type UserRole = "Admin" | "Manager" | "Employee"
+
 export default function Announcements() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([
-    { id: 1, title: "New Project Launch", content: "We're excited to announce the launch of our new project.", author: "Admin", date: "2025-09-15", type: "update", priority: "high" },
-    { id: 2, title: "Team Meeting", content: "Weekly team meeting scheduled for Friday.", author: "Manager", date: "2025-09-14", type: "general", priority: "medium" },
-    { id: 3, title: "System Maintenance", content: "Scheduled maintenance on Sunday from 2-4 AM.", author: "Admin", date: "2025-09-13", type: "important", priority: "high" },
-  ])
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [userRole, setUserRole] = useState<UserRole | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)  // Change to string
   const [form, setForm] = useState({ title: "", content: "", type: "general" as Announcement["type"], priority: "medium" as Announcement["priority"] })
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<"all" | Announcement["type"]>("all")
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUserRole(data.user.role);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await fetch('/api/announcements', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setAnnouncements(data.announcements)
+        } else {
+          console.error('Failed to fetch announcements')
+        }
+      } catch (error) {
+        console.error('Error fetching announcements:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAnnouncements()
+  }, [])
+
   const filteredAnnouncements = announcements.filter(ann => {
     const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ann.content.toLowerCase().includes(searchTerm.toLowerCase())
+      ann.content.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = filterType === "all" || ann.type === filterType
     return matchesSearch && matchesType
   })
 
-  const handleSave = () => {
-    if (isEditing && editingId) {
-      setAnnouncements(announcements.map(ann => ann.id === editingId ? { ...ann, ...form } : ann))
-      setIsEditing(false)
-      setEditingId(null)
-    } else {
-      setAnnouncements([...announcements, { id: Date.now(), author: userRole, date: new Date().toISOString().split('T')[0], ...form }])
-      setIsModalOpen(false)
+  const handleSave = async () => {
+    try {
+      const method = isEditing ? 'PUT' : 'POST';
+      const url = isEditing ? `/api/announcements/${editingId}` : '/api/announcements';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        const fetchRes = await fetch('/api/announcements', { credentials: 'include' });
+        if (fetchRes.ok) {
+          const data = await fetchRes.json();
+          setAnnouncements(data.announcements);
+        }
+        setIsModalOpen(false);
+        setIsEditing(false);
+        setEditingId(null);
+        setForm({ title: "", content: "", type: "general", priority: "medium" });
+      } else {
+        console.error('Failed to save announcement');
+      }
+    } catch (error) {
+      console.error('Error saving announcement:', error);
     }
-    setForm({ title: "", content: "", type: "general", priority: "medium" })
   }
 
   const handleEdit = (ann: Announcement) => {
@@ -61,8 +108,20 @@ export default function Announcements() {
     setIsModalOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    setAnnouncements(announcements.filter(ann => ann.id !== id))
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/announcements/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        setAnnouncements(announcements.filter(ann => ann.id !== id));
+      } else {
+        console.error('Failed to delete announcement');
+      }
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+    }
   }
 
   const getTypeIcon = (type: string) => {
@@ -83,6 +142,24 @@ export default function Announcements() {
   }
 
   const canManageAnnouncements = userRole === "Admin" || userRole === "Manager"
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded mb-4"></div>
+            <div className="grid grid-cols-1 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

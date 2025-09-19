@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { FolderOpen, CheckCircle, Clock, AlertTriangle, Calendar, User, Edit, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,14 +22,29 @@ interface Task {
 }
 
 export default function MyTasks() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, title: "Design UI Mockups", description: "Create wireframes for homepage", status: "In Progress", priority: "High", dueDate: "2025-09-20", projectName: "Website Redesign", progress: 70, assignee: "John Doe" },
-    { id: 2, title: "Code Backend API", description: "Implement REST endpoints", status: "Completed", priority: "Medium", dueDate: "2025-09-18", projectName: "Mobile App", progress: 100, assignee: "John Doe" },
-    { id: 3, title: "Write Documentation", description: "Update API docs", status: "Pending", priority: "Low", dueDate: "2025-09-25", projectName: "Website Redesign", progress: 20, assignee: "John Doe" },
-  ])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+
   const [filter, setFilter] = useState("All")
 
-  // TODO: Fetch tasks based on current user (Employee role)
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch('/api/my-tasks', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setTasks(data.tasks)
+        } else {
+          console.error('Failed to fetch tasks')
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTasks()
+  }, [])
 
   const filteredTasks = tasks.filter(task => filter === "All" || task.status === filter)
 
@@ -53,6 +68,24 @@ export default function MyTasks() {
       case "Pending": return <AlertTriangle className="h-4 w-4 text-yellow-600" />
       default: return null
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-64 bg-muted rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -91,7 +124,7 @@ export default function MyTasks() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-700">{task.description}</p>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">Progress</span>
