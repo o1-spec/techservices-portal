@@ -35,7 +35,7 @@ export default function Announcements() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('/api/me', { credentials: 'include' });
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
           setUserRole(data.user.role);
