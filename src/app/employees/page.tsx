@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Plus, Edit, Trash2, Search, Filter, Users, Mail, Shield, Activity } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -7,45 +7,112 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/Header"
 
+
 interface Employee {
-  id: number
+  id: string
   name: string
   email: string
   role: string
   status: string
+  phone?: string
+  department?: string
 }
 
 export default function Employees() {
-  const [employees, setEmployees] = useState<Employee[]>([
-    { id: 1, name: "John Doe", email: "john@example.com", role: "Employee", status: "Active" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", role: "Manager", status: "Active" },
-    { id: 3, name: "Mike Johnson", email: "mike@example.com", role: "Admin", status: "Inactive" },
-    { id: 4, name: "Sarah Wilson", email: "sarah@example.com", role: "Employee", status: "Active" },
-  ])
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-  const [form, setForm] = useState({ name: "", email: "", role: "Employee", status: "Active" })
+  const [form, setForm] = useState({ name: "", email: "", role: "Employee", status: "Active", phone: "", department: "" })
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRole, setFilterRole] = useState("All")
   const [filterStatus, setFilterStatus] = useState("All")
 
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch('/api/employees', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setEmployees(data.employees)
+        } else {
+          console.error('Failed to fetch employees')
+        }
+      } catch (error) {
+        console.error('Error fetching employees:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchEmployees()
+  }, [])
+
   const openModal = (employee: Employee | null = null) => {
     setEditingEmployee(employee)
-    setForm(employee || { name: "", email: "", role: "Employee", status: "Active" })
+    setForm(
+      employee
+        ? {
+          name: employee.name,
+          email: employee.email,
+          role: employee.role,
+          status: employee.status,
+          phone: employee.phone ?? "",
+          department: employee.department ?? "",
+        }
+        : { name: "", email: "", role: "Employee", status: "Active", phone: "", department: "" }
+    )
     setIsModalOpen(true)
   }
 
-  const handleSave = () => {
-    if (editingEmployee) {
-      setEmployees(employees.map((emp: Employee) => (emp.id === editingEmployee.id ? { ...emp, ...form } : emp)))
-    } else {
-      setEmployees([...employees, { id: Date.now(), ...form }])
+  const handleSave = async () => {
+    try {
+      const method = editingEmployee ? 'PUT' : 'POST'
+      const url = editingEmployee ? `/api/employees/${editingEmployee.id}` : '/api/employees'
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          status: form.status,
+          phone: form.phone || '+1 (555) 000-0000',
+          department: form.department || 'Engineering',
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (editingEmployee) {
+          setEmployees(employees.map(emp => emp.id === editingEmployee.id ? { ...emp, ...form } : emp))
+        } else {
+          setEmployees([...employees, data.employee])
+        }
+        setIsModalOpen(false)
+        setEditingEmployee(null)
+        setForm({ name: "", email: "", role: "Employee", status: "Active", phone: "", department: "" })
+      } else {
+        console.error('Failed to save employee')
+      }
+    } catch (error) {
+      console.error('Error saving employee:', error)
     }
-    setIsModalOpen(false)
   }
 
-  const handleDelete = (id: number) => {
-    setEmployees(employees.filter((emp: Employee) => emp.id !== id))
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/employees/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (res.ok) {
+        setEmployees(employees.filter(emp => emp.id !== id))
+      } else {
+        console.error('Failed to delete employee')
+      }
+    } catch (error) {
+      console.error('Error deleting employee:', error)
+    }
   }
 
   const filteredEmployees = employees.filter((emp) => {
@@ -66,6 +133,17 @@ export default function Employees() {
       default:
         return <Users className="h-4 w-4 text-muted-foreground" />
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="loader mb-4"></div>
+          <p className="text-muted-foreground">Loading employees...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -166,16 +244,14 @@ export default function Employees() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          emp.status === "Active"
-                            ? "bg-chart-4/10 text-chart-4 border border-chart-4/20"
-                            : "bg-destructive/10 text-destructive border border-destructive/20"
-                        }`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${emp.status === "Active"
+                          ? "bg-chart-4/10 text-chart-4 border border-chart-4/20"
+                          : "bg-destructive/10 text-destructive border border-destructive/20"
+                          }`}
                       >
                         <div
-                          className={`w-2 h-2 rounded-full mr-2 ${
-                            emp.status === "Active" ? "bg-chart-4" : "bg-destructive"
-                          }`}
+                          className={`w-2 h-2 rounded-full mr-2 ${emp.status === "Active" ? "bg-chart-4" : "bg-destructive"
+                            }`}
                         />
                         {emp.status}
                       </span>
@@ -250,6 +326,25 @@ export default function Employees() {
                 />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Phone Number</label>
+              <Input
+                placeholder="Enter phone number"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Department</label>
+              <Input
+                placeholder="Enter department"
+                value={form.department}
+                onChange={(e) => setForm({ ...form, department: e.target.value })}
+              />
+            </div>
+
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
