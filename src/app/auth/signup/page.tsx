@@ -18,11 +18,23 @@ interface FormErrors {
   role?: string;
   companyName?: string;
   agreeToTerms?: string;
+  phone?: string;
+  department?: string;
   general?: string;
 }
 
 export default function SignUp() {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", role: "Employee", companyName: "", agreeToTerms: false })
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "Employee",
+    companyName: "",
+    phone: "",
+    department: "",
+    agreeToTerms: false
+  })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -67,6 +79,14 @@ export default function SignUp() {
       newErrors.agreeToTerms = "You must agree to the terms and conditions"
     }
 
+    if (!form.phone.trim()) {
+      newErrors.phone = "Phone number is required"
+    }
+
+    if (!form.department.trim()) {
+      newErrors.department = "Department is required"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -81,7 +101,15 @@ export default function SignUp() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        companyName: form.companyName,
+        phone: form.phone,
+        department: form.department,
+      }),
     })
     if (res.ok) {
       const data = await res.json()
@@ -236,7 +264,36 @@ export default function SignUp() {
                   />
                   {errors.companyName && <p className="text-destructive text-sm mt-1">{errors.companyName}</p>}
                 </div>
-
+                <div className="relative group">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-secondary transition-colors" />
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    aria-label="Phone Number"
+                    className={`w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 ${errors.phone ? "border-destructive" : ""}`}
+                    placeholder="Enter your phone number"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  />
+                  {errors.phone && <p className="text-destructive text-sm mt-1">{errors.phone}</p>}
+                </div>
+                <div className="relative group">
+                  <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-secondary transition-colors" />
+                  <input
+                    id="department"
+                    name="department"
+                    type="text"
+                    required
+                    aria-label="Department"
+                    className={`w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 ${errors.department ? "border-destructive" : ""}`}
+                    placeholder="Enter your department"
+                    value={form.department}
+                    onChange={(e) => setForm({ ...form, department: e.target.value })}
+                  />
+                  {errors.department && <p className="text-destructive text-sm mt-1">{errors.department}</p>}
+                </div>
                 <div className="flex items-start space-x-3">
                   <input
                     id="agreeToTerms"

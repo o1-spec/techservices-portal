@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
-import Company from "@/models/Company";
-import { registerSchema } from "@/schemas/auth";
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
+import Company from '@/models/Company';
+import { registerSchema } from '@/schemas/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +15,9 @@ export async function POST(request: NextRequest) {
     if (!validationResult.success) {
       return NextResponse.json(
         {
-          error: "Validation failed",
+          error: 'Validation failed',
           details: validationResult.error.issues.map((issue) => ({
-            field: issue.path.join("."),
+            field: issue.path.join('.'),
             message: issue.message,
           })),
         },
@@ -25,13 +25,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password, role, companyName } = validationResult.data;
-
+    const { name, email, password, role, companyName, phone, department } = validationResult.data;
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
-        { error: "User with this email already exists" },
+        { error: 'User with this email already exists' },
         { status: 409 }
       );
     }
@@ -50,6 +49,8 @@ export async function POST(request: NextRequest) {
       password,
       role,
       company_id: company._id,
+      phone,
+      department,
       isEmailVerified: true, // Skip verification for now
     });
 
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Return success response
     return NextResponse.json(
       {
-        message: "User registered successfully. Please log in.",
+        message: 'User registered successfully. Please log in.',
         user: {
           id: user._id,
           name: user.name,
@@ -70,9 +71,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error('Registration error:', error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
