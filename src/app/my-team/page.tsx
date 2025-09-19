@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Users, Mail, Phone, Building, TrendingUp, Search, User, Eye } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 // Mock team data (replace with API fetch)
 interface TeamMember {
-    id: number
+    id: string  // Change to string
     name: string
     email: string
     phone: string
@@ -23,11 +23,8 @@ interface TeamMember {
 }
 
 export default function MyTeam() {
-    const [team, setTeam] = useState<TeamMember[]>([
-        { id: 1, name: "John Doe", email: "john@example.com", phone: "+1 (555) 123-4567", role: "Senior Developer", department: "Engineering", status: "Active", performance: 92, tasksCompleted: 45 },
-        { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "+1 (555) 987-6543", role: "UI/UX Designer", department: "Design", status: "Active", performance: 88, tasksCompleted: 38 },
-        { id: 3, name: "Bob Johnson", email: "bob@example.com", phone: "+1 (555) 456-7890", role: "Backend Developer", department: "Engineering", status: "Inactive", performance: 75, tasksCompleted: 22 },
-    ])
+    const [team, setTeam] = useState<TeamMember[]>([])
+    const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [filterDepartment, setFilterDepartment] = useState("All")
 
@@ -39,7 +36,25 @@ export default function MyTeam() {
         setSelectedMember(member)
         setIsProfileModalOpen(true)
     }
-    // TODO: Fetch team based on current Manager
+
+    useEffect(() => {
+        const fetchTeam = async () => {
+            try {
+                const res = await fetch('/api/my-team', { credentials: 'include' })
+                if (res.ok) {
+                    const data = await res.json()
+                    setTeam(data.team)
+                } else {
+                    console.error('Failed to fetch team')
+                }
+            } catch (error) {
+                console.error('Error fetching team:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchTeam()
+    }, [])
 
     const filteredTeam = team.filter(member => {
         const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,6 +72,24 @@ export default function MyTeam() {
         if (performance >= 90) return "text-green-600"
         if (performance >= 80) return "text-yellow-600"
         return "text-red-600"
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <Header />
+                <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                    <div className="animate-pulse">
+                        <div className="h-8 bg-muted rounded mb-4"></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="h-64 bg-muted rounded"></div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (

@@ -6,6 +6,8 @@ export interface IUser extends Document {
   email: string
   password: string
   role: 'Admin' | 'Manager' | 'Employee'
+  phone?: string;
+  department?: string;
   company_id: mongoose.Types.ObjectId
   isEmailVerified: boolean
   emailVerificationToken?: string
@@ -42,6 +44,14 @@ const userSchema = new Schema<IUser>({
     required: [true, 'Password is required'],
     minlength: [8, 'Password must be at least 8 characters'],
     select: false
+  },
+   phone: {
+    type: String,
+    default: '+1 (555) 000-0000'
+  },
+  department: {
+    type: String,
+    default: 'Engineering'
   },
   role: {
     type: String,

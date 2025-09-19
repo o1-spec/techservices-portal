@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   FolderOpen,
   Plus,
@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Header from "@/components/Header"
 
 interface Project {
-  id: number
+  id: string
   name: string
   description: string
   status: string
@@ -32,60 +32,92 @@ interface Project {
 }
 
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: 1,
-      name: "Website Redesign",
-      description: "Complete redesign of company website with modern UI/UX",
-      status: "In Progress",
-      deadline: "2025-12-01",
-      team: 5,
-      progress: 65,
-    },
-    {
-      id: 2,
-      name: "Mobile App Development",
-      description: "Develop cross-platform mobile application",
-      status: "Completed",
-      deadline: "2025-10-15",
-      team: 3,
-      progress: 100,
-    },
-    {
-      id: 3,
-      name: "Database Migration",
-      description: "Migrate legacy database to cloud infrastructure",
-      status: "Planning",
-      deadline: "2025-11-30",
-      team: 4,
-      progress: 15,
-    },
-    {
-      id: 4,
-      name: "API Integration",
-      description: "Integrate third-party APIs for enhanced functionality",
-      status: "In Progress",
-      deadline: "2025-10-20",
-      team: 2,
-      progress: 40,
-    },
-  ])
+  const [projects, setProjects] = useState<Project[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [form, setForm] = useState({ name: "", description: "", deadline: "", team: 0 })
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("All")
-  const [selectedEmployees, setSelectedEmployees] = useState<number[]>([])
-  const [employees, _setEmployees] = useState([
-    { id: 1, name: "John Doe", role: "Developer" },
-    { id: 2, name: "Jane Smith", role: "Designer" },
-    { id: 3, name: "Bob Johnson", role: "Developer" },
-    { id: 4, name: "Alice Brown", role: "Manager" },
-  ])
-  const handleSave = () => {
-    setProjects([...projects, { id: Date.now(), status: "Planning", progress: 0, ...form }])
-    setIsModalOpen(false)
-    setForm({ name: "", description: "", deadline: "", team: 0 })
-    setSelectedEmployees([])
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([])
+  const [employees, setEmployees] = useState<{ id: string; name: string; role: string }[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch('/api/projects', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setProjects(data.projects)
+        } else {
+          console.error('Failed to fetch projects')
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [])
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch('/api/users', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          interface ApiUser {
+            id: string
+            name: string
+            role: string
+          }
+          setEmployees(data.users.map((user: ApiUser) => ({ id: user.id, name: user.name, role: user.role })))
+        } else {
+          setEmployees([
+            { id: "1", name: "John Doe", role: "Developer" },
+            { id: "2", name: "Jane Smith", role: "Designer" },
+            { id: "3", name: "Bob Johnson", role: "Developer" },
+            { id: "4", name: "Alice Brown", role: "Manager" },
+          ])
+        }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        setEmployees([
+          { id: "1", name: "John Doe", role: "Developer" },
+          { id: "2", name: "Jane Smith", role: "Designer" },
+          { id: "3", name: "Bob Johnson", role: "Developer" },
+          { id: "4", name: "Alice Brown", role: "Manager" },
+        ])
+      }
+    }
+    fetchEmployees()
+  }, [])
+
+  const handleSave = async () => {
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: form.name,
+          description: form.description,
+          deadline: form.deadline,
+          team: selectedEmployees, // Array of user IDs
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setProjects([...projects, data.project])
+        setIsModalOpen(false)
+        setForm({ name: "", description: "", deadline: "", team: 0 })
+        setSelectedEmployees([])
+      } else {
+        console.error('Failed to create project')
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+    }
   }
 
   const filteredProjects = projects.filter((project) => {
@@ -124,6 +156,24 @@ export default function Projects() {
 
   const isOverdue = (deadline: string) => {
     return new Date(deadline) < new Date() && !projects.find((p) => p.deadline === deadline && p.status === "Completed")
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-64 bg-muted rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -329,9 +379,8 @@ export default function Projects() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Assign Employees</label>
                 <Select onValueChange={(value) => {
-                  const empId = Number(value)
-                  if (!selectedEmployees.includes(empId)) {
-                    setSelectedEmployees([...selectedEmployees, empId])
+                  if (!selectedEmployees.includes(value)) {
+                    setSelectedEmployees([...selectedEmployees, value])
                   }
                 }}>
                   <SelectTrigger>
@@ -339,7 +388,7 @@ export default function Projects() {
                   </SelectTrigger>
                   <SelectContent>
                     {employees.map((emp) => (
-                      <SelectItem key={emp.id} value={emp.id.toString()}>
+                      <SelectItem key={emp.id} value={emp.id}>
                         {emp.name} - {emp.role}
                       </SelectItem>
                     ))}

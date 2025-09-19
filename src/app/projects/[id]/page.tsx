@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
@@ -13,24 +14,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import Header from "@/components/Header"
 
 // Mock project data
+
 interface Project {
-  id: number
+  id: string
   name: string
   description: string
   status: string
   deadline: string
   progress: number
-  team: { id: number; name: string; role: string }[]
-  tasks: { id: number; title: string; status: string; assignee: string }[]
+  team: { id: string; name: string; role: string }[]
+  tasks: { id: string; title: string; status: string; assignee: string }[]
 }
 
-// Mock employees data for assignment
-const mockEmployees = [
-  { id: 1, name: "John Doe", role: "Developer" },
-  { id: 2, name: "Jane Smith", role: "Designer" },
-  { id: 3, name: "Bob Johnson", role: "Developer" },
-  { id: 4, name: "Alice Brown", role: "Manager" },
-]
+interface MemberProfile {
+  id: string
+  name: string
+  role: string
+  email: string
+  phone: string
+  department: string
+  status: string
+  performance: number
+  tasksCompleted: number
+}
 
 export default function ProjectDetails() {
   const { id } = useParams()
@@ -41,19 +47,56 @@ export default function ProjectDetails() {
   const [newTeamMember, setNewTeamMember] = useState({ name: "", role: "" })
   const [newTask, setNewTask] = useState({ title: "", description: "", assignee: "" })
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-  interface MemberProfile {
-    id: number
-    name: string
-    role: string
-    email: string
-    phone: string
-    department: string
-    status: string
-    performance: number
-    tasksCompleted: number
-  }
-  
-    const [selectedMember, setSelectedMember] = useState<MemberProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [employees, setEmployees] = useState<{ id: string; name: string; role: string }[]>([])
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const res = await fetch(`/api/projects/${id}`, { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setProject(data.project)
+        } else {
+          console.error('Failed to fetch project')
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch('/api/users', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setEmployees(data.users)
+        } else {
+          // Fallback to mock
+          setEmployees([
+            { id: "1", name: "John Doe", role: "Developer" },
+            { id: "2", name: "Jane Smith", role: "Designer" },
+            { id: "3", name: "Bob Johnson", role: "Developer" },
+            { id: "4", name: "Alice Brown", role: "Manager" },
+          ])
+        }
+      } catch (error) {
+        // Fallback
+        setEmployees([
+          { id: "1", name: "John Doe", role: "Developer" },
+          { id: "2", name: "Jane Smith", role: "Designer" },
+          { id: "3", name: "Bob Johnson", role: "Developer" },
+          { id: "4", name: "Alice Brown", role: "Manager" },
+        ])
+      }
+    }
+
+    fetchProject()
+    fetchEmployees()
+  }, [id])
+
+  const [selectedMember, setSelectedMember] = useState<MemberProfile | null>(null)
 
   const openProfileModal = (member: Project["team"][number]) => {
     const mockProfile = {
@@ -68,27 +111,21 @@ export default function ProjectDetails() {
     setSelectedMember(mockProfile)
     setIsProfileModalOpen(true)
   }
-  useEffect(() => {
-    // TODO: Fetch project by id
-    setProject({
-      id: Number(id),
-      name: "Website Redesign",
-      description: "Complete overhaul of the company website with modern design and improved UX.",
-      status: "In Progress",
-      deadline: "2025-12-01",
-      progress: 65,
-      team: [
-        { id: 1, name: "John Doe", role: "Lead Developer" },
-        { id: 2, name: "Jane Smith", role: "UI/UX Designer" },
-        { id: 3, name: "Bob Johnson", role: "Backend Developer" },
-      ],
-      tasks: [
-        { id: 1, title: "Design mockups", status: "Completed", assignee: "Jane Smith" },
-        { id: 2, title: "Frontend development", status: "In Progress", assignee: "John Doe" },
-        { id: 3, title: "API integration", status: "Pending", assignee: "Bob Johnson" },
-      ],
-    })
-  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded mb-4"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-32 bg-muted rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!project) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>
 
@@ -110,35 +147,88 @@ export default function ProjectDetails() {
     }
   }
 
-  const handleSave = () => {
-    // TODO: Save project updates
-    setIsEditing(false)
-  }
-
-  const handleAddTeamMember = () => {
-    if (newTeamMember.name && newTeamMember.role) {
-      const newMember = {
-        id: project.team.length + 1,
-        name: newTeamMember.name,
-        role: newTeamMember.role,
+  const handleSave = async () => {
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: project.name,
+          description: project.description,
+          status: project.status,
+        }),
+      })
+      if (res.ok) {
+        setIsEditing(false)
+      } else {
+        console.error('Failed to update project')
       }
-      setProject({ ...project, team: [...project.team, newMember] })
-      setNewTeamMember({ name: "", role: "" })
-      setIsAddTeamModalOpen(false)
+    } catch (error) {
+      console.error('Error updating project:', error)
     }
   }
 
-  const handleAddTask = () => {
-    if (newTask.title && newTask.assignee) {
-      const newTaskItem = {
-        id: project.tasks.length + 1,
-        title: newTask.title,
-        status: "Pending",
-        assignee: newTask.assignee,
+  const handleAddTeamMember = async () => {
+    if (newTeamMember.name && newTeamMember.role) {
+      const selectedEmp = employees.find(emp => emp.name === newTeamMember.name)
+      if (selectedEmp) {
+        try {
+          const res = await fetch(`/api/projects/${id}/team`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              userId: selectedEmp.id,
+              role: newTeamMember.role,
+            }),
+          })
+          if (res.ok) {
+            // Refetch project to update team
+            const fetchRes = await fetch(`/api/projects/${id}`, { credentials: 'include' })
+            if (fetchRes.ok) {
+              const data = await fetchRes.json()
+              setProject(data.project)
+            }
+            setNewTeamMember({ name: "", role: "" })
+            setIsAddTeamModalOpen(false)
+          } else {
+            console.error('Failed to add team member')
+          }
+        } catch (error) {
+          console.error('Error adding team member:', error)
+        }
       }
-      setProject({ ...project, tasks: [...project.tasks, newTaskItem] })
-      setNewTask({ title: "", description: "", assignee: "" })
-      setIsAddTaskModalOpen(false)
+    }
+  }
+  const handleAddTask = async () => {
+    if (newTask.title && newTask.assignee) {
+      try {
+        const res = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            title: newTask.title,
+            description: newTask.description,
+            project_id: id,
+            assignedTo: project.team.find(m => m.name === newTask.assignee)?.id || '',
+          }),
+        })
+        if (res.ok) {
+          const fetchRes = await fetch(`/api/projects/${id}`, { credentials: 'include' })
+          if (fetchRes.ok) {
+            const data = await fetchRes.json()
+            setProject(data.project)
+          }
+          setNewTask({ title: "", description: "", assignee: "" })
+          setIsAddTaskModalOpen(false)
+        } else {
+          console.error('Failed to add task')
+        }
+      } catch (error) {
+        console.error('Error adding task:', error)
+      }
     }
   }
 
@@ -260,7 +350,7 @@ export default function ProjectDetails() {
                           <SelectValue placeholder="Choose an employee" />
                         </SelectTrigger>
                         <SelectContent>
-                          {mockEmployees.map((emp) => (
+                          {employees.map((emp) => (
                             <SelectItem key={emp.id} value={emp.name}>
                               {emp.name} - {emp.role}
                             </SelectItem>
