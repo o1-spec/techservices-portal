@@ -105,10 +105,12 @@ export default function SignUp() {
         name: form.name,
         email: form.email,
         password: form.password,
+        confirmPassword: form.confirmPassword,
         role: form.role,
         companyName: form.companyName,
         phone: form.phone,
         department: form.department,
+        agreeToTerms: form.agreeToTerms,
       }),
     })
     if (res.ok) {
